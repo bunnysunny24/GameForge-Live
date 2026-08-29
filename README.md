@@ -9,6 +9,21 @@
 [![Live Demo](https://img.shields.io/badge/Live%20API-Render.com-brightgreen.svg)](https://gameforge-live.onrender.com/api/leaderboards/global)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
+## 🌐 Live Production Deployment
+
+GameForge-Live is deployed and live on cloud infrastructure:
+
+- 📖 **Interactive Swagger UI (API Docs)**: [https://gameforge-live.onrender.com/swagger-ui/index.html](https://gameforge-live.onrender.com/swagger-ui/index.html)
+- 🏆 **Global Leaderboard API**: [https://gameforge-live.onrender.com/api/leaderboards/global](https://gameforge-live.onrender.com/api/leaderboards/global)
+- 🎁 **Active LiveOps Events API**: [https://gameforge-live.onrender.com/api/liveops/events/active](https://gameforge-live.onrender.com/api/liveops/events/active)
+- 📊 **Platform Analytics Dashboard**: [https://gameforge-live.onrender.com/api/analytics/dashboard](https://gameforge-live.onrender.com/api/analytics/dashboard)
+- 🎯 **Achievements Catalog**: [https://gameforge-live.onrender.com/api/achievements](https://gameforge-live.onrender.com/api/achievements)
+
+### 🔑 Pre-Seeded Production Accounts
+- **Admin**: `admin` / `Admin@123`
+- **Player**: `Bhavashesh` / `Password@123`
+- **Player**: `CyberKnight` / `Password@123`
+
 ---
 
 ## 🧠 What is GameForge-Live?
