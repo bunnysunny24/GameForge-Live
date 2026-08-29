@@ -5,7 +5,8 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Redis](https://img.shields.io/badge/Redis-7.0%20Sorted%20Sets-red.svg)](https://redis.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0%20%2F%20Swagger-green.svg)](http://localhost:8080/swagger-ui.html)
+[![OpenAPI](https://img.shields.io/badge/Live%20Swagger%20UI-OpenAPI%203.0-green.svg)](https://gameforge-live.onrender.com/swagger-ui/index.html)
+[![Live Demo](https://img.shields.io/badge/Live%20API-Render.com-brightgreen.svg)](https://gameforge-live.onrender.com/api/leaderboards/global)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 ---
