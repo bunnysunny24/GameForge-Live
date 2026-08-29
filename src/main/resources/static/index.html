@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameForge-Live — LiveOps & Game Services Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        gaming: ['Rajdhani', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    colors: {
+                        forge: {
+                            900: '#090d16',
+                            800: '#0f172a',
+                            700: '#1e293b',
+                            gold: '#f59e0b',
+                            cyan: '#06b6d4',
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            green: '#10b981'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .neon-border-cyan { box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
+        .neon-border-gold { box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+        .neon-border-purple { box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+        .glow-text-cyan { text-shadow: 0 0 10px rgba(6, 182, 212, 0.6); }
+        .glow-text-gold { text-shadow: 0 0 10px rgba(245, 158, 11, 0.6); }
+        .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        @keyframes pulse-slow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.02); } }
+        .animate-pulse-slow { animation: pulse-slow 3s infinite ease-in-out; }
+    </style>
+</head>
+<body class="bg-forge-900 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- TOP NAVBAR -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-gamepad text-white text-xl"></i>
+                </div>
+                <div>
+                    <span class="font-gaming text-2xl font-bold tracking-wider text-white">GAMEFORGE<span class="text-cyan-400">.LIVE</span></span>
+                    <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-mono uppercase rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/50">LiveOps Platform</span>
+                </div>
+            </div>
+
+            <!-- Server Status & Links -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <div class="flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span id="server-status">Services Online</span>
+                </div>
+
+                <a href="/swagger-ui/index.html" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-code text-cyan-400"></i>
+                    <span>Swagger API</span>
+                </a>
+
+                <a href="https://github.com/bunnysunny24/GameForge-Live" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-cyan-500/20 transition flex items-center space-x-1.5">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <span class="hidden sm:inline">GitHub Repo</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ACTIVE LIVEOPS MULTIPLIER BANNER -->
+    <div id="liveops-banner" class="bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-b border-amber-500/30 px-4 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm font-medium">
+            <div class="flex items-center space-x-2 text-amber-300">
+                <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/50 font-bold uppercase tracking-wider text-[11px] animate-pulse-slow">🔥 Active Live Event</span>
+                <span id="event-title" class="font-semibold text-white">🎉 Weekend Double XP Extravaganza</span>
+                <span class="text-slate-400 hidden md:inline">— All match XP multiplied by <strong class="text-amber-400 font-bold">2.0x</strong> in real-time!</span>
+            </div>
+            <div class="flex items-center space-x-3 mt-1 sm:mt-0 text-slate-300 font-mono text-xs">
+                <span>XP Multiplier: <strong id="xp-mult-badge" class="text-amber-400">2.0x</strong></span>
+                <span>•</span>
+                <span>Coin Multiplier: <strong id="coin-mult-badge" class="text-amber-400">2.0x</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+        <!-- ACTIVE PLAYER SESSION SELECTOR -->
+        <section class="glass-panel rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <img id="player-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Bhavashesh" alt="Avatar" class="w-14 h-14 rounded-xl bg-slate-800 border-2 border-cyan-500/50 p-1">
+                    <span id="player-level-badge" class="absolute -bottom-2 -right-2 px-1.5 py-0.5 rounded bg-cyan-600 text-white font-mono text-[10px] font-bold border border-slate-900">LVL 15</span>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h2 id="player-username" class="font-gaming text-2xl font-bold text-white tracking-wide">Bhavashesh</h2>
+                        <span id="player-role" class="px-2 py-0.5 text-[10px] font-mono rounded bg-slate-800 text-cyan-400 border border-slate-700">ROLE_PLAYER</span>
+                    </div>
+                    <div class="flex items-center space-x-4 mt-1 text-xs text-slate-400 font-mono">
+                        <span>XP: <strong id="player-xp" class="text-cyan-400">8,500</strong></span>
+                        <span>Coins: <strong id="player-coins" class="text-amber-400">12,000</strong> 💰</span>
+                        <span>Gems: <strong id="player-gems" class="text-pink-400">150</strong> 💎</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Switcher & Actions -->
+            <div class="flex flex-wrap items-center gap-2">
+                <label class="text-xs font-mono text-slate-400">Simulate As:</label>
+                <select id="player-select" onchange="switchPlayer(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:ring-1 focus:ring-cyan-500 focus:outline-none font-mono">
+                    <option value="Bhavashesh" selected>Bhavashesh (Level 15)</option>
+                    <option value="CyberKnight">CyberKnight (Level 18 - #1 Rank)</option>
+                    <option value="ViperStrike">ViperStrike (Level 12)</option>
+                    <option value="PixelMaster">PixelMaster (Level 8)</option>
+                </select>
+                <button onclick="refreshData()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Refresh Live Data">
+                    <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- GRID 1: GAME CLIENT SIMULATOR (CENTERPIECE) + GLOBAL LEADERBOARD -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- GAME CLIENT SIMULATOR (7 COLS) -->
+            <section class="lg:col-span-7 glass-panel rounded-2xl p-5 sm:p-6 border border-cyan-500/20 neon-border-cyan flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="text-cyan-400 text-xl"><i class="fa-solid fa-gamepad"></i></span>
+                            <h3 class="font-gaming text-xl font-bold text-white tracking-wide">GAME CLIENT SIMULATOR</h3>
+                        </div>
+                        <span class="text-[11px] font-mono text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded border border-slate-800">REST API Telemetry Dispatcher</span>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mb-4">
+                        Simulate gameplay events from a mobile/PC game client. The backend evaluates active LiveOps multipliers, calculates leveling formulas, checks achievement conditions, and submits highscores in real time.
+                    </p>
+
+                    <!-- Game Mode & Score Controls -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                        <div>
+                            <label class="block text-xs font-mono text-slate-400 mb-1.5">Selected Game Mode</label>
+                            <select id="sim-game-mode" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-cyan-500 font-mono">
+                                <option value="RACING">🏎️ Hyper-Drift Racing</option>
+                                <option value="BATTLE_ROYALE">⚔️ Apex Battle Royale</option>
+                                <option value="ARCADE">🕹️ Arcade High-Speed Sprint</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-slate-400 mb-1.5">Match Score: <span id="score-display" class="text-amber-400 font-bold font-mono">16,200</span> pts</label>
+                            <input type="range" id="sim-score-input" min="5000" max="25000" step="500" value="16200" oninput="document.getElementById('score-display').innerText = Number(this.value).toLocaleString()" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Payload Preview -->
+                    <div class="bg-slate-950/80 rounded-xl p-3.5 border border-slate-800 font-mono text-xs mb-5">
+                        <div class="text-slate-500 mb-1 text-[11px] uppercase tracking-wider font-semibold">// Real-Time Telemetry Pipeline</div>
+                        <div class="text-slate-300">
+                            Base XP: <span class="text-cyan-400 font-bold">500 XP</span> |
+                            LiveOps Multiplier: <span class="text-amber-400 font-bold">2.0x</span> |
+                            Expected Gain: <span class="text-emerald-400 font-bold">+1,000 XP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="simulateMatchFinish()" id="btn-sim-match" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-gaming text-lg font-bold tracking-wider shadow-lg shadow-cyan-500/25 transition transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <span>COMPLETE MATCH & SUBMIT SCORE</span>
+                    </button>
+                    <button onclick="simulateWinRace()" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-gaming text-lg font-bold tracking-wider border border-amber-500/30 transition transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span>TRIGGER WIN EVENT</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- GLOBAL LEADERBOARD (5 COLS) -->
+            <section class="lg:col-span-5 glass-panel rounded-2xl p-5 sm:p-6 border border-amber-500/20 neon-border-gold flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="text-amber-400 text-xl"><i class="fa-solid fa-trophy"></i></span>
+                            <h3 class="font-gaming text-xl font-bold text-white tracking-wide">GLOBAL LEADERBOARD</h3>
+                        </div>
+                        <span class="text-[11px] font-mono text-amber-400/80 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">Redis O(log N)</span>
+                    </div>
+
+                    <!-- Top Ranked Table -->
+                    <div class="space-y-2" id="leaderboard-list">
+                        <div class="text-center py-8 text-slate-500 font-mono text-xs animate-pulse">Loading real-time ranks...</div>
+                    </div>
+                </div>
+
+                <div class="pt-4 mt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
+                    <span>Rank Query: <strong class="text-emerald-400">&lt; 1ms</strong></span>
+                    <span>Total Ranked: <strong id="total-ranked" class="text-white">4</strong></span>
+                </div>
+            </section>
+        </div>
+
+        <!-- GRID 2: ACHIEVEMENT RULE ENGINE & FEATURE FLAG SYSTEM -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- ACHIEVEMENT RULE ENGINE (7 COLS) -->
+            <section class="lg:col-span-7 glass-panel rounded-2xl p-5 sm:p-6 border border-slate-800">
+                <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="text-purple-400 text-xl"><i class="fa-solid fa-medal"></i></span>
+                        <h3 class="font-gaming text-xl font-bold text-white tracking-wide">ACHIEVEMENT RULE ENGINE</h3>
+                    </div>
+                    <span class="text-[11px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Rule-Based Progression</span>
+                </div>
+
+                <div id="achievements-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div class="text-center py-8 text-slate-500 font-mono text-xs col-span-2 animate-pulse">Loading achievements catalog...</div>
+                </div>
+            </section>
+
+            <!-- FEATURE FLAG ROLLOUT VISUALIZER (5 COLS) -->
+            <section class="lg:col-span-5 glass-panel rounded-2xl p-5 sm:p-6 border border-slate-800">
+                <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="text-pink-400 text-xl"><i class="fa-solid fa-flag"></i></span>
+                        <h3 class="font-gaming text-xl font-bold text-white tracking-wide">FEATURE FLAGS & ROLLOUTS</h3>
+                    </div>
+                    <span class="text-[11px] font-mono text-pink-400 bg-pink-950/40 px-2 py-0.5 rounded border border-pink-800/40">CRC32 Hash</span>
+                </div>
+
+                <p class="text-xs text-slate-400 mb-3">
+                    Stateless deterministic percentage bucketing. Test how different Player IDs get assigned into feature release cohorts:
+                </p>
+
+                <!-- Interactive Cohort Tester -->
+                <div class="flex items-center space-x-2 mb-4">
+                    <input type="number" id="test-player-id" value="2" min="1" max="9999" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:ring-1 focus:ring-pink-500" placeholder="Player ID">
+                    <button onclick="testFeatureFlagsForId(document.getElementById('test-player-id').value)" class="px-3 py-1.5 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-xs font-semibold transition">
+                        Evaluate Cohort
+                    </button>
+                </div>
+
+                <div id="feature-flags-list" class="space-y-2.5">
+                    <div class="text-center py-6 text-slate-500 font-mono text-xs animate-pulse">Evaluating feature flags...</div>
+                </div>
+            </section>
+        </div>
+
+        <!-- GRID 3: LIVE ANALYTICS & TELEMETRY DASHBOARD -->
+        <section class="glass-panel rounded-2xl p-5 sm:p-6 border border-slate-800">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+                <div class="flex items-center space-x-2.5">
+                    <span class="text-emerald-400 text-xl"><i class="fa-solid fa-chart-line"></i></span>
+                    <h3 class="font-gaming text-xl font-bold text-white tracking-wide">LIVEOPS ANALYTICS & TELEMETRY</h3>
+                </div>
+                <span class="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded border border-emerald-800/40">Real-Time Ingestion</span>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div class="bg-slate-900/90 rounded-xl p-3.5 border border-slate-800">
+                    <div class="text-xs font-mono text-slate-400">Total Telemetry Events</div>
+                    <div id="metric-total-events" class="text-2xl font-gaming font-bold text-white mt-1">9</div>
+                </div>
+                <div class="bg-slate-900/90 rounded-xl p-3.5 border border-slate-800">
+                    <div class="text-xs font-mono text-slate-400">Daily Active Users (DAU)</div>
+                    <div id="metric-dau" class="text-2xl font-gaming font-bold text-cyan-400 mt-1">3</div>
+                </div>
+                <div class="bg-slate-900/90 rounded-xl p-3.5 border border-slate-800">
+                    <div class="text-xs font-mono text-slate-400">Avg Session Duration</div>
+                    <div id="metric-avg-session" class="text-2xl font-gaming font-bold text-amber-400 mt-1">14.3m</div>
+                </div>
+                <div class="bg-slate-900/90 rounded-xl p-3.5 border border-slate-800">
+                    <div class="text-xs font-mono text-slate-400">Live Event Engagement</div>
+                    <div id="metric-event-rate" class="text-2xl font-gaming font-bold text-emerald-400 mt-1">33.3%</div>
+                </div>
+            </div>
+
+            <!-- Live Event Activity Stream -->
+            <div>
+                <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">// Live Telemetry Ingestion Feed</h4>
+                <div id="telemetry-log" class="bg-slate-950/90 rounded-xl p-3 font-mono text-xs text-slate-400 h-28 overflow-y-auto space-y-1 border border-slate-800/80">
+                    <div class="text-slate-500">[System Initialized] Telemetry pipeline ready for incoming match packets...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="glass-panel border-t border-slate-800 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-mono">
+            GameForge-Live © 2026 — LiveOps & Game Services Backend Platform | Built with Spring Boot 3, Redis, PostgreSQL & Java 17
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT PLATFORM LOGIC -->
+    <script>
+        const API_BASE = '';
+        let currentAuthToken = '';
+        let currentPlayer = { id: 2, username: 'Bhavashesh', level: 15, xp: 8500, coins: 12000, gems: 150 };
+
+        const playerCredentials = {
+            'Bhavashesh': { username: 'Bhavashesh', password: 'Password@123', id: 2 },
+            'CyberKnight': { username: 'CyberKnight', password: 'Password@123', id: 3 },
+            'ViperStrike': { username: 'ViperStrike', password: 'Password@123', id: 4 },
+            'PixelMaster': { username: 'PixelMaster', password: 'Password@123', id: 5 }
+        };
+
+        // Authenticate & Load Initial Data
+        async function init() {
+            await switchPlayer('Bhavashesh');
+            await loadLiveOpsEvents();
+            await loadLeaderboard();
+            await loadAchievements();
+            await loadAnalytics();
+        }
+
+        async function switchPlayer(username) {
+            const creds = playerCredentials[username];
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: creds.username, password: creds.password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentAuthToken = data.data.token;
+                    currentPlayer = data.data;
+                    updatePlayerUI();
+                    await testFeatureFlagsForId(currentPlayer.playerId || creds.id);
+                    await loadAchievements();
+                    logTelemetry(`Authenticated session for player ${username} (JWT issued)`);
+                }
+            } catch (err) {
+                console.error("Auth failed:", err);
+            }
+        }
+
+        function updatePlayerUI() {
+            document.getElementById('player-username').innerText = currentPlayer.username;
+            document.getElementById('player-avatar').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${currentPlayer.username}`;
+            document.getElementById('player-level-badge').innerText = `LVL ${currentPlayer.level}`;
+            document.getElementById('player-coins').innerText = (currentPlayer.coins || 0).toLocaleString();
+            document.getElementById('player-gems').innerText = (currentPlayer.gems || 0).toLocaleString();
+            document.getElementById('player-xp').innerText = (currentPlayer.xp || 0).toLocaleString();
+            document.getElementById('test-player-id').value = currentPlayer.playerId || currentPlayer.id || 2;
+        }
+
+        // 1. Leaderboard
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch(`${API_BASE}/api/leaderboards/global?limit=5`);
+                const json = await res.json();
+                const container = document.getElementById('leaderboard-list');
+                if (!json.success || !json.data.length) return;
+
+                document.getElementById('total-ranked').innerText = json.data.length;
+                container.innerHTML = '';
+
+                const rankIcons = { 1: '🥇', 2: '🥈', 3: '🥉' };
+                const rankStyles = {
+                    1: 'bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold',
+                    2: 'bg-slate-400/10 border-slate-400/30 text-slate-200',
+                    3: 'bg-amber-700/10 border-amber-700/30 text-amber-600',
+                    default: 'bg-slate-900/60 border-slate-800 text-slate-300'
+                };
+
+                json.data.forEach(entry => {
+                    const icon = rankIcons[entry.rank] || `#${entry.rank}`;
+                    const style = rankStyles[entry.rank] || rankStyles.default;
+                    const isCurrent = entry.username === currentPlayer.username;
+
+                    const row = document.createElement('div');
+                    row.className = `flex items-center justify-between p-2.5 rounded-xl border ${style} ${isCurrent ? 'ring-2 ring-cyan-400' : ''} transition`;
+                    row.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <span class="w-6 text-center text-sm">${icon}</span>
+                            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${entry.username}" class="w-8 h-8 rounded-lg bg-slate-800 p-0.5 border border-slate-700">
+                            <div>
+                                <div class="text-xs font-bold text-white flex items-center space-x-1.5">
+                                    <span>${entry.username}</span>
+                                    ${isCurrent ? '<span class="text-[9px] px-1 bg-cyan-500 text-black font-bold rounded">YOU</span>' : ''}
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-mono">LVL ${entry.level}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-gaming font-bold text-amber-400">${entry.score.toLocaleString()} pts</div>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            } catch (e) {
+                console.error("Leaderboard fetch error:", e);
+            }
+        }
+
+        // 2. LiveOps Events
+        async function loadLiveOpsEvents() {
+            try {
+                const res = await fetch(`${API_BASE}/api/liveops/events/active`);
+                const json = await res.json();
+                if (json.success && json.data) {
+                    document.getElementById('xp-mult-badge').innerText = `${json.data.xpMultiplier}x`;
+                    document.getElementById('coin-mult-badge').innerText = `${json.data.coinMultiplier}x`;
+                    if (json.data.activeEvents.length > 0) {
+                        document.getElementById('event-title').innerText = json.data.activeEvents[0].title;
+                    }
+                }
+            } catch (e) {
+                console.error("LiveOps fetch error:", e);
+            }
+        }
+
+        // 3. Achievements
+        async function loadAchievements() {
+            try {
+                const pId = currentPlayer.playerId || currentPlayer.id || 2;
+                const res = await fetch(`${API_BASE}/api/achievements/player/${pId}`);
+                const json = await res.json();
+                const container = document.getElementById('achievements-grid');
+                if (!json.success || !json.data.length) return;
+
+                container.innerHTML = '';
+                json.data.forEach(ach => {
+                    const card = document.createElement('div');
+                    const unlocked = ach.unlocked;
+                    card.className = `p-3.5 rounded-xl border ${unlocked ? 'bg-purple-950/20 border-purple-500/40' : 'bg-slate-900/60 border-slate-800'} flex flex-col justify-between`;
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-xs font-bold ${unlocked ? 'text-purple-300' : 'text-slate-300'}">${ach.title}</span>
+                                ${unlocked ? '<span class="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded font-mono font-bold">UNLOCKED</span>' : `<span class="text-[10px] text-slate-500 font-mono">${ach.currentProgress}/${ach.targetValue}</span>`}
+                            </div>
+                            <p class="text-[11px] text-slate-400 mb-2">${ach.description}</p>
+                        </div>
+                        <div>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
+                                <div class="bg-gradient-to-r from-cyan-500 to-purple-500 h-1.5 rounded-full" style="width: ${ach.progressPercentage}%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                                <span>Reward: +${ach.rewardCoins} 💰 +${ach.rewardXp} XP</span>
+                                <span class="text-cyan-400">${ach.progressPercentage}%</span>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                console.error("Achievements error:", e);
+            }
+        }
+
+        // 4. Feature Flags
+        async function testFeatureFlagsForId(playerId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/features/evaluate/player/${playerId}`);
+                const json = await res.json();
+                const container = document.getElementById('feature-flags-list');
+                if (!json.success || !json.data) return;
+
+                container.innerHTML = '';
+                const features = json.data.features;
+                const reasons = json.data.evaluationReasons;
+
+                for (let key in features) {
+                    const enabled = features[key];
+                    const reason = reasons[key];
+                    const item = document.createElement('div');
+                    item.className = `p-2.5 rounded-xl border ${enabled ? 'bg-pink-950/20 border-pink-500/40 text-pink-200' : 'bg-slate-900/60 border-slate-800 text-slate-400'} flex items-center justify-between text-xs`;
+                    item.innerHTML = `
+                        <div>
+                            <div class="font-mono font-bold ${enabled ? 'text-white' : 'text-slate-400'}">${key}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${reason}</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] ${enabled ? 'bg-pink-500/20 text-pink-300 border border-pink-500/50' : 'bg-slate-800 text-slate-500'}">
+                            ${enabled ? 'ENABLED' : 'DISABLED'}
+                        </span>
+                    `;
+                    container.appendChild(item);
+                }
+            } catch (e) {
+                console.error("Feature flag error:", e);
+            }
+        }
+
+        // 5. Analytics
+        async function loadAnalytics() {
+            try {
+                const res = await fetch(`${API_BASE}/api/analytics/dashboard`);
+                const json = await res.json();
+                if (json.success && json.data) {
+                    document.getElementById('metric-total-events').innerText = json.data.totalEventsTracked;
+                    document.getElementById('metric-dau').innerText = json.data.dailyActiveUsers;
+                    document.getElementById('metric-avg-session').innerText = `${json.data.averageSessionDurationMinutes}m`;
+                    document.getElementById('metric-event-rate').innerText = `${json.data.liveEventParticipationRate}%`;
+                }
+            } catch (e) {
+                console.error("Analytics error:", e);
+            }
+        }
+
+        // Actions: Simulate Match Finish
+        async function simulateMatchFinish() {
+            const scoreVal = parseFloat(document.getElementById('sim-score-input').value);
+            const mode = document.getElementById('sim-game-mode').value;
+
+            try {
+                // 1. Submit Score
+                const scoreRes = await fetch(`${API_BASE}/api/leaderboards/scores`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentAuthToken}` },
+                    body: JSON.stringify({ leaderboardName: 'GLOBAL', score: scoreVal, gameMode: mode })
+                });
+
+                // 2. Add XP (with LiveOps 2.0x multiplier)
+                const xpRes = await fetch(`${API_BASE}/api/players/me/add-xp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentAuthToken}` },
+                    body: JSON.stringify({ baseAmount: 500, source: 'MATCH_COMPLETED' })
+                });
+                const xpData = await xpRes.json();
+
+                // 3. Ingest Telemetry Event
+                await fetch(`${API_BASE}/api/analytics/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentAuthToken}` },
+                    body: JSON.stringify({ eventType: 'GAME_COMPLETED', gameMode: mode, sessionDurationSeconds: 720, score: scoreVal })
+                });
+
+                if (xpData.success) {
+                    const gained = xpData.data.finalAwardedXp;
+                    const mult = xpData.data.eventMultiplier;
+                    logTelemetry(`🏁 Match Completed! Awarded ${gained} XP (Base 500 × ${mult}x Event Multiplier) | Score: ${scoreVal}`);
+                    
+                    if (xpData.data.leveledUp) {
+                        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+                        logTelemetry(`🎉 LEVEL UP! Reached Level ${xpData.data.newLevel} (+${xpData.data.bonusCoinsAwarded} Coins, +${xpData.data.bonusGemsAwarded} Gems)`);
+                    } else {
+                        confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                    }
+
+                    // Reload active profile
+                    const pRes = await fetch(`${API_BASE}/api/players/me`, {
+                        headers: { 'Authorization': `Bearer ${currentAuthToken}` }
+                    });
+                    const pData = await pRes.json();
+                    if (pData.success) {
+                        currentPlayer = pData.data;
+                        updatePlayerUI();
+                    }
+                }
+
+                await loadLeaderboard();
+                await loadAnalytics();
+            } catch (err) {
+                console.error("Match simulation error:", err);
+            }
+        }
+
+        // Actions: Trigger Win Race (Achievements)
+        async function simulateWinRace() {
+            try {
+                const res = await fetch(`${API_BASE}/api/achievements/process-event`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentAuthToken}` },
+                    body: JSON.stringify({ metric: 'RACES_WON', incrementBy: 1 })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const notif = data.data;
+                    logTelemetry(`🏆 Progress Event: ${notif.metricProcessed} is now ${notif.newMetricValue}`);
+                    if (notif.newlyUnlockedAchievements.length > 0) {
+                        confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+                        notif.newlyUnlockedAchievements.forEach(a => {
+                            logTelemetry(`⭐ UNLOCKED ACHIEVEMENT: '${a.title}' (+${a.rewardCoins} Coins, +${a.rewardGems} Gems)!`);
+                        });
+                    }
+                    await loadAchievements();
+                }
+            } catch (err) {
+                console.error("Achievement trigger error:", err);
+            }
+        }
+
+        function logTelemetry(msg) {
+            const container = document.getElementById('telemetry-log');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = 'text-cyan-300';
+            div.innerHTML = `<span class="text-slate-500">[${time}]</span> ${msg}`;
+            container.prepend(div);
+        }
+
+        function refreshData() {
+            loadLeaderboard();
+            loadLiveOpsEvents();
+            loadAchievements();
+            loadAnalytics();
+            logTelemetry("Manual sync completed across all services");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
